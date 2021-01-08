@@ -27,7 +27,7 @@ class NetMF(torch.nn.Module):
           /       \
         (2)       (1)
         """
-        if not Graph_input:
+        if Graph_input:
             A = sp.csr_matrix(nx.adjacency_matrix(G))
         else:
             A = G
