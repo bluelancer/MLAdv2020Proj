@@ -16,7 +16,7 @@ class NetMF(torch.nn.Module):
         self.negative = negative
         self.is_large = is_large
 
-    def train(self, G, Graph_input=True):
+    def train(self, G, Graph_input=False):
         # G :nx.graph: For directed graphs, entry i,j in G corresponds to an edge from i to j.
         """
               G

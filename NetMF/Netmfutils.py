@@ -7,6 +7,8 @@ from sklearn.multiclass import OneVsRestClassifier
 from sklearn.metrics import f1_score
 import logging
 import torch
+import cogdl.datasets as cd
+import networkx as nx
 
 class Netmfutils:
 
@@ -83,3 +85,10 @@ class Netmfutils:
         label = np.array(label)
         print(label.shape, type(label), label.min(), label.max())
         return label
+
+    def load_graph(self,dataset):
+        dataset = cd.build_dataset_from_name(dataset)
+        self.data = dataset[0]
+        G = nx.Graph()
+        G.add_edges_from(self.data.edge_index.t().tolist())
+        return G
