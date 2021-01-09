@@ -6,8 +6,6 @@ import torch
 class NetMF(torch.nn.Module):
 
     # By Yifei Jin
-    # TODO: use dgl for reformulization
-    # TODO: use numpy for reformulization
 
     def __init__(self, dimension, window_size, rank, negative, is_large=False):
         self.dimension = dimension
@@ -29,7 +27,7 @@ class NetMF(torch.nn.Module):
         """
         if Graph_input:
             A = sp.csr_matrix(nx.adjacency_matrix(G))
-        else:
+        else:# For test the input of the .mat in the publicationx
             A = G
         if not self.is_large:
             print("Running NetMF for a small window size...")

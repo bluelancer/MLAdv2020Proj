@@ -25,30 +25,45 @@ class Netmfutils:
                 y_pred[i, y_sort[i, j]] = 1
         return y_pred
 
-    def node_classification_loss(self,X, y, train_ratio=0.2, n_splits=10, random_state=0, C=1.):
+    def node_classification_loss(self,X, y, train_ratio=0.8, n_splits=5, random_state=0, C=1.):
+        # report the Micro-F1 and Macro-F1 scores after a 5-fold multi-label
+        # classification using one-vs-rest logistic regression.
         micro, macro = [], []
         shuffle = ShuffleSplit(n_splits=n_splits, test_size=1-train_ratio,
                                random_state=random_state)
+
         for train_index, test_index in shuffle.split(X):
+
             print(train_index.shape, test_index.shape)
-            assert len(set(train_index) & set(test_index)) == 0
+            print(X.shape, y.shape)
+            # assert len(set(train_index) & set(test_index)) == 0
             assert len(train_index) + len(test_index) == X.shape[0]
-            X_train, X_test = X[train_index], X[test_index]
-            y_train, y_test = y[train_index], y[test_index]
+
+            X_train, X_test = X[train_index,:], X[test_index,:]
+            y_train, y_test = y[train_index,:], y[test_index,:]
+
+            # one-vs-rest logistic regression
             clf = OneVsRestClassifier(
                     LogisticRegression(
                         C=C,
                         solver="liblinear",
                         multi_class="ovr"),
                     n_jobs=-1)
+
             clf.fit(X_train, y_train)
+
             y_score = clf.predict_proba(X_test)
+
             y_pred = self.construct_indicator(y_score, y_test)
+
             mi = f1_score(y_test, y_pred, average="micro")
             ma = f1_score(y_test, y_pred, average="macro")
+
             self.logger.info("micro f1 %f macro f1 %f", mi, ma)
+
             micro.append(mi)
             macro.append(ma)
+
         print("%d fold validation, training ratio %f", len(micro), train_ratio)
         print("Average micro %.2f, Average macro %.2f",
                 np.mean(micro) * 100,
@@ -61,24 +76,10 @@ class Netmfutils:
         pred = F.sigmoid(prod)
         return pred
 
-    def load_w2v_feature(self,file):
-        with open(file, "rb") as f:
-            nu = 0
-            for line in f:
-                content = line.strip().split()
-                nu += 1
-                if nu == 1:
-                    n, d = int(content[0]), int(content[1])
-                    feature = [[] for i in range(n)]
-                    continue
-                index = int(content[0])
-                for x in content[1:]:
-                    feature[index].append(float(x))
-        for item in feature:
-            assert len(item) == d
-        return np.array(feature, dtype=np.float32)
-
     def load_label(self, file, variable_name="group"):
+        """
+        Load a .mat label set
+        """
         data = scipy.io.loadmat(file)
         self.logger.info("loading mat file %s", file)
         label = data[variable_name].todense().astype(np.int)
@@ -87,8 +88,23 @@ class Netmfutils:
         return label
 
     def load_graph(self,dataset):
+        """
+        Load a cogdl networkx graph
+        """
         dataset = cd.build_dataset_from_name(dataset)
         self.data = dataset[0]
         G = nx.Graph()
         G.add_edges_from(self.data.edge_index.t().tolist())
         return G
+
+    def load_features(self, dataset, G, embeddings):
+        """
+        Load a cogdl networkx graph's feature
+        """
+        feature_num = dataset.num_features
+        node_num = dataset[0].y.shape[0]
+        features_matrix = np.zeros(node_num, feature_num)
+        for vertex, node in enumerate(G.nodes()):
+            features_matrix[node] = embeddings[vertex]
+
+
