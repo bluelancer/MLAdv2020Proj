@@ -1,0 +1,7 @@
+Result:
+
+Node classification:
+NetMF:
+After filtering, max eigenvalue=%f, min eigenvalue=%f 0.9999999999999991 0.023762809288344934
+5 fold validation, training ratio 0.8 
+Average micro 43.21805936542802, Average macro 28.74779244436939 

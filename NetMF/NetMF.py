@@ -26,8 +26,9 @@ class NetMF(torch.nn.Module):
         (2)       (1)
         """
         if Graph_input:
-            A = sp.csr_matrix(nx.adjacency_matrix(G))
-        else:# For test the input of the .mat in the publicationx
+            A = sp.csr_matrix(nx.adjacency_matrix(G, nodelist=sorted(G.nodes())))
+        else:
+            # For test the input of the .mat in the publicationx
             A = G
         if not self.is_large:
             print("Running NetMF for a small window size...")
@@ -68,7 +69,10 @@ class NetMF(torch.nn.Module):
             S += X_power
 
         S *= vol / window / b
-        # D^-1, The length-N diagonal of the Laplacian matrix. For the normalized Laplacian, this is the array of square roots of vertex degrees or 1 if the degree is zero.
+        # D^-1, The length-N diagonal of the Laplacian matrix.
+        # For the normalized Laplacian, this is the array of
+        # square roots of vertex degrees or 1 if the degree is zero.
+
         D_rt_inv = sp.diags(d_rt ** -1)
 
         M = D_rt_inv.dot(D_rt_inv.dot(S).T).todense()

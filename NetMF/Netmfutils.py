@@ -36,7 +36,8 @@ class Netmfutils:
 
             print(train_index.shape, test_index.shape)
             print(X.shape, y.shape)
-            # assert len(set(train_index) & set(test_index)) == 0
+
+            assert len(set(train_index) & set(test_index)) == 0
             assert len(train_index) + len(test_index) == X.shape[0]
 
             X_train, X_test = X[train_index,:], X[test_index,:]
@@ -78,7 +79,7 @@ class Netmfutils:
 
     def load_label(self, file, variable_name="group"):
         """
-        Load a .mat label set
+        Load a .mat label set, to verify the code
         """
         data = scipy.io.loadmat(file)
         self.logger.info("loading mat file %s", file)
